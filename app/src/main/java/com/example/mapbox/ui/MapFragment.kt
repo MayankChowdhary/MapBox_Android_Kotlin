@@ -123,7 +123,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                Vibration.vibrate(100, null)
+                Vibration.vibrate(50, null)
                 // Handle the menu selection
                 return when (menuItem.itemId) {
                     R.id.action_default -> {
@@ -157,7 +157,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         binding.fabMarker.isEnabled = false
 
         binding.fabLocation.setOnClickListener {
-            Vibration.vibrate(100, null)
+            Vibration.vibrate(50, null)
             locationComponent?.lastKnownLocation?.let {
                 maplibreMap.cameraPosition =
                     CameraPosition.Builder().target(LatLng(it.latitude, it.longitude)).zoom(
@@ -167,7 +167,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.fabMarker.setOnClickListener {
-            Vibration.vibrate(100, null)
+            Vibration.vibrate(50, null)
         }
 
         mapView = binding.mapView
