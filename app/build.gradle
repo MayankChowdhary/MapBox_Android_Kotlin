@@ -83,6 +83,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation "com.github.lisawray.groupie:groupie:2.10.1"
     implementation "com.github.lisawray.groupie:groupie-databinding:2.10.1"
+    implementation 'org.maplibre.gl:android-sdk:10.2.0'
 
 
 }

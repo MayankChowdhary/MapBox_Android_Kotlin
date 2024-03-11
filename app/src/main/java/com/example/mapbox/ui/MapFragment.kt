@@ -17,8 +17,12 @@ import com.example.mapbox.R
 import com.example.mapbox.databinding.FragmentMapBinding
 import com.example.mapbox.viewmodels.MainViewModel
 import com.google.android.material.snackbar.Snackbar
-import com.xwray.groupie.GroupieAdapter
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraPosition
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.maps.MapView
 import dagger.hilt.android.AndroidEntryPoint
+
 
 
 @AndroidEntryPoint
@@ -26,11 +30,15 @@ class MapFragment : Fragment() {
     private lateinit var binding: FragmentMapBinding
     private lateinit var viewState: MainViewState
     private val viewModel: MainViewModel by viewModels()
-    private lateinit var searchView: SearchView
     var handler: Handler = Handler(Looper.getMainLooper())
     var doubleBackToExitPressedOnce = false
-    val adapterGroupie = GroupieAdapter()
+    private lateinit var mapView: MapView
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Mapbox.getInstance(requireActivity());
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +52,7 @@ class MapFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        mapView.onResume()
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             if (doubleBackToExitPressedOnce) {
                 requireActivity().finish();
@@ -61,22 +70,39 @@ class MapFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewState = MainActivity.viewState
         binding.viewState = viewState
-        initRecyclerView()
-
-
-        viewModel.wikiClickLiveData.observe(viewLifecycleOwner) {
-            it?.let {
-                NavHostFragment.findNavController(this)
-                    .navigate(MapFragmentDirections.actionFirstFragmentToSecondFragment(it))
-                viewModel.wikiClickLiveData.value = null
-            }
+        mapView = binding.mapView
+        mapView.getMapAsync { map ->
+            map.setStyle("https://demotiles.maplibre.org/style.json")
+            map.cameraPosition = CameraPosition.Builder().target(LatLng(0.0, 0.0)).zoom(1.0).build()
         }
+
+        /*NavHostFragment.findNavController(this)
+            .navigate(MapFragmentDirections.actionFirstFragmentToSecondFragment(it))*/
     }
 
-    private fun initRecyclerView() {
-        val recyclerView = binding.recyclerview
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.hasFixedSize()
-        recyclerView.adapter = adapterGroupie
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+        mapView.onPause()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mapView.onStop()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView.onLowMemory()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDestroy()
     }
 }

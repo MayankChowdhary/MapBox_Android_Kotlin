@@ -16,10 +16,10 @@
         android:background="@color/white"
         tools:context=".ui.MapFragment">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerview"
+        <com.mapbox.mapboxsdk.maps.MapView
+            android:id="@+id/mapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="@{viewState.recyclerViewVisibility}" />
+            android:layout_height="match_parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
