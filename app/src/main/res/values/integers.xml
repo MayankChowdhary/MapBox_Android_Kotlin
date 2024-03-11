@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="SymmetricProgressBar_colors">
+        <item>#D32F2F</item>
+        <item>#FBC02D</item>
+        <item>#388E3C</item>
+        <item>#0288D1</item>
+    </array>
+    <integer name="SymmetricProgressBar_duration">1000</integer>
+</resources>
