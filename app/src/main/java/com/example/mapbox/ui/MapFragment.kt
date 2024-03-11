@@ -1,20 +1,26 @@
 package com.example.mapbox.ui
 
+
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.NavHostFragment
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.Lifecycle
 import com.example.mapbox.R
 import com.example.mapbox.databinding.FragmentMapBinding
+import com.example.mapbox.utils.Constants
+import com.example.mapbox.utils.Vibration
 import com.example.mapbox.viewmodels.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.mapbox.mapboxsdk.Mapbox
@@ -22,7 +28,6 @@ import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import dagger.hilt.android.AndroidEntryPoint
-
 
 
 @AndroidEntryPoint
@@ -34,6 +39,8 @@ class MapFragment : Fragment() {
     var doubleBackToExitPressedOnce = false
     private lateinit var mapView: MapView
 
+
+    private var styleUrl = Constants.MapType.barikoiLiberty
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +56,7 @@ class MapFragment : Fragment() {
         binding = FragmentMapBinding.inflate(inflater, container, false)
         return binding.root
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -68,13 +76,56 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val menuHost: MenuHost = requireActivity()
+
         viewState = MainActivity.viewState
         binding.viewState = viewState
+
+
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                // Add menu items here
+                menuInflater.inflate(R.menu.menu_main, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                Vibration.vibrate(100,"Map Style Changed")
+                // Handle the menu selection
+                return when (menuItem.itemId) {
+                    R.id.action_default -> {
+                        styleUrl = Constants.MapType.default
+                        mapView.getMapAsync { map -> map.setStyle(styleUrl) }
+                        true
+                    }
+                    R.id.action_dark -> {
+                        styleUrl = Constants.MapType.barikoiDark
+                        mapView.getMapAsync { map -> map.setStyle(styleUrl) }
+                        true
+                    }
+                    R.id.action_liberty -> {
+                        styleUrl = Constants.MapType.barikoiLiberty
+                        mapView.getMapAsync { map -> map.setStyle(styleUrl) }
+                        true
+                    }else -> {
+                        styleUrl = Constants.MapType.default
+                        mapView.getMapAsync { map -> map.setStyle(styleUrl) }
+                        true
+                    }
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+
+
+
+
         mapView = binding.mapView
         mapView.getMapAsync { map ->
-            map.setStyle("https://demotiles.maplibre.org/style.json")
+            map.setStyle(styleUrl)
             map.cameraPosition = CameraPosition.Builder().target(LatLng(0.0, 0.0)).zoom(1.0).build()
         }
+
+
 
         /*NavHostFragment.findNavController(this)
             .navigate(MapFragmentDirections.actionFirstFragmentToSecondFragment(it))*/

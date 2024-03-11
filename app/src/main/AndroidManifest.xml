@@ -11,8 +11,9 @@
         </intent>
     </queries>
 
+    <uses-permission android:name="android.permission.VIBRATE" />
     <application
-        android:name="com.example.mapbox.FoodStore"
+        android:name="com.example.mapbox.MapBox"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

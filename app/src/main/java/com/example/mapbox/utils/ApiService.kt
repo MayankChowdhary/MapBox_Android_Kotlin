@@ -30,6 +30,6 @@ interface ApiService {
     )
 
     companion object {
-        const val BASE_URL = Constants.BASE_URL
+        const val BASE_URL = ""
     }
 }
