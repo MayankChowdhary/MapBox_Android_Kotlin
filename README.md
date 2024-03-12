@@ -1,4 +1,4 @@
-# WikiSearch
+# MapBoxAndroid
 
 MapBox Android native Kotlin App
 This app is used to display Map with current location and Marker input as well.
