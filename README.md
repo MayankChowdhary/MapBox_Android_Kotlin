@@ -27,11 +27,11 @@ This app is used to display Map with current location and Marker input as well.
 
 <table style="width:100%; border:0px">
   <tr>
-    <td WIDTH=300 ><img src="https://github.com/MayankChowdhary/WikiSearch/blob/main/screenshots/Screenshot51.gif" >
+    <td WIDTH=300 ><img src="https://github.com/MayankChowdhary/MapBox_Android_Kotlin/blob/master/screenshots/screenshot1.jpg" >
 </td>
-    <td WIDTH=300 ><img src="https://github.com/MayankChowdhary/WikiSearch/blob/main/screenshots/Screenshot41.jpg" >
+    <td WIDTH=300 ><img src="https://github.com/MayankChowdhary/MapBox_Android_Kotlin/blob/master/screenshots/screenshot2.jpg" >
 </td>
-    <td WIDTH=300 ><img src="https://github.com/MayankChowdhary/WikiSearch/blob/main/screenshots/Screenshot11.jpg" >
+    <td WIDTH=300 ><img src="https://github.com/MayankChowdhary/MapBox_Android_Kotlin/blob/master/screenshots/screenshot3.jpg" >
 </td>
 </tr>
 </table>
