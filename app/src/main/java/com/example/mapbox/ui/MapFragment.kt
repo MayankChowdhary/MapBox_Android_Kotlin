@@ -3,23 +3,30 @@ package com.example.mapbox.ui
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.postDelayed
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -30,6 +37,8 @@ import com.example.mapbox.utils.Vibration
 import com.example.mapbox.viewmodels.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponent
@@ -43,11 +52,13 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.layers.Layer
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
 class MapFragment : Fragment(), OnMapReadyCallback {
+    private val DROPPED_MARKER_LAYER_ID = "DROPPED_MARKER_LAYER_ID"
     private lateinit var binding: FragmentMapBinding
     private lateinit var viewState: MainViewState
     private val viewModel: MainViewModel by viewModels()
@@ -60,6 +71,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var locationComponent: LocationComponent? = null
     private lateinit var maplibreMap: MapboxMap
     val SAVED_STATE_LOCATION: String = "SAVED_STATE_LOCATION"
+    lateinit var loadedMapStyle: Style;
+    private var hoveringMarker: ImageView? = null
+    private var droppedMarkerLayer: Layer? = null
 
 
     private var styleUrl = Constants.MapType.default
@@ -168,6 +182,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         binding.fabMarker.setOnClickListener {
             Vibration.vibrate(50, null)
+            toggleFabMarkerVisibility()
+            if (hoveringMarker?.visibility != View.VISIBLE) {
+                addMarkersToMap();
+            }
+
         }
 
         mapView = binding.mapView
@@ -222,6 +241,18 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             locationComponent!!.isLocationComponentEnabled = true
             locationComponent!!.cameraMode = CameraMode.TRACKING
             locationComponent!!.forceLocationUpdate(lastLocation)
+            loadedMapStyle = style
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                locationComponent?.lastKnownLocation?.let {
+                    maplibreMap.cameraPosition =
+                        CameraPosition.Builder().target(LatLng(it.latitude, it.longitude)).zoom(
+                            3.0
+                        ).build()
+                }
+            }, 1000)
+
+            initDroppedMarker();
         }
 
         binding.fabLocation.isEnabled = true
@@ -278,6 +309,70 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         permissionsManager!!.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun initDroppedMarker() {
+        hoveringMarker = ImageView(requireContext())
+        hoveringMarker?.setImageResource(R.drawable.ic_marker)
+        val params = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER
+        )
+        hoveringMarker?.layoutParams = params
+        mapView.addView(hoveringMarker)
+        hoveringMarker?.visibility = View.GONE
+    }
+
+    private fun addMarkersToMap() {
+        val bound: LatLng? = maplibreMap.cameraPosition.target
+        // Get bitmaps for marker icon
+        val infoIconDrawable = ResourcesCompat.getDrawable(
+            this.resources,
+            com.mapbox.mapboxsdk.R.drawable.maplibre_marker_icon_default,
+            null
+        )!!
+        val bitmapBlue =
+            infoIconDrawable
+                .mutate()
+                .toBitmap()
+
+
+        // Add symbol for each point feature
+        val latLng = LatLng(bound?.latitude ?: 0.0, bound?.longitude ?: 0.0)
+        // Contents in InfoWindow of each marker
+        val title = "marker"
+        val icon = IconFactory.getInstance(requireActivity())
+            .fromBitmap(bitmapBlue)
+
+        // Use MarkerOptions and addMarker() to add a new marker in map
+        val markerOptions = MarkerOptions()
+            .position(latLng)
+            .title(title)
+            .snippet(title)
+            .icon(icon)
+        maplibreMap.addMarker(markerOptions)
+        // Move camera to newly added annotation
+        val newCameraPosition = CameraPosition.Builder()
+            .target(LatLng(bound?.latitude ?: 0.0, bound?.longitude ?: 0.0))
+            .zoom(4.0)
+            .build()
+        maplibreMap.cameraPosition = newCameraPosition
+    }
+
+    private fun toggleFabMarkerVisibility() {
+        if (hoveringMarker?.visibility == View.VISIBLE) {
+            hoveringMarker?.visibility = View.GONE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                binding.fabMarker.foreground =
+                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_add_marker)
+            }
+        } else {
+            hoveringMarker?.visibility = View.VISIBLE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                binding.fabMarker.foreground =
+                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_drop_marker)
+            }
+        }
     }
 
 
